@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hpa-apache-load-tester
+  namespace: szabolcs
+spec:
+  selector:
+    matchLabels:
+      run: hpa-apache-load-tester
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: hpa-apache-load-tester
+    spec:
+      containers:
+      - name: hpa-apache-load-tester
+        image: hpa-testing-php:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            cpu: 500m
+          requests:
+            cpu: 200m
+---
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: hpa-apache-load-tester
+  namespace: szabolcs
+  labels:
+    run: hpa-apache-load-tester
+spec:
+  ports:
+  - port: 8080
+  selector:
+    run: hpa-apache-load-tester
+
+---
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-apache-load-tester
+  namespace: szabolcs
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hpa-apache-load-tester
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 30
