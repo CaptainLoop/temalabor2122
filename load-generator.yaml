@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hpa-load-generator
+  namespace: szabolcs
+spec:
+  selector:
+    matchLabels:
+      app: hpa-load-generator
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: hpa-load-generator
+    spec:
+      containers:
+      - name: hpa-load-generator
+        image: busybox
+        command:
+        args: [/bin/sh, -c, 'while true; do wget -q -O- http://<ip_address>; done']
